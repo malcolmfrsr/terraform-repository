@@ -35,14 +35,12 @@ data "aws_iam_policy_document" "allow_access_from_another_account" {
 
   statement {
     principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::238182092824:user/terraform-user"]
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
     }
 
     actions = [
-      "s3:GetObject",
-      "s3:GetBucketAcl",
-      "s3:PutBucketAcl"
+      "s3:GetObject"
     ]
 
     resources = [aws_s3_bucket.web-repository.arn,
@@ -63,7 +61,30 @@ resource "aws_s3_bucket_public_access_block" "web-repository" {
 #####################################################################
 ######################### website content ###########################
 #####################################################################
+# Configure 
+resource "aws_s3_bucket_website_configuration" "mf_s3_website_configuration" {
+  bucket = aws_s3_bucket.web-repository.id
 
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "index.html"
+  }
+}
+
+resource "aws_s3_object" "webindex" {
+  bucket = aws_s3_bucket.web-repository.id
+  key    = "index.html"
+  source = "website/index.html"
+
+content_type = "text/html"
+  # The filemd5() function is available in Terraform 0.11.12 and later
+  # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
+  # etag = "${md5(file("path/to/file"))}"
+  etag = filemd5("website/index.html")
+}
 
 #####################################################################
 ##################### cloudfront distribution #######################
@@ -78,11 +99,15 @@ resource "aws_cloudfront_origin_access_control" "default" {
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-    domain_name              = aws_s3_bucket.web-repository.bucket_regional_domain_name
-    origin_access_control_id = aws_cloudfront_origin_access_control.default.id
     origin_id                = aws_s3_bucket.web-repository.id
+    domain_name              = aws_s3_bucket.web-repository.bucket_regional_domain_name
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1"]
+    }
   }
-
 
 
   enabled             = true
@@ -169,6 +194,4 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   viewer_certificate {
     cloudfront_default_certificate = true
   }
-
-
 }
