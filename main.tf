@@ -35,13 +35,15 @@ data "aws_iam_policy_document" "allow_access_from_another_account" {
 
   statement {
     principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E1UH4UX6RASB3U"] 
     }
 
     actions = [
       "s3:GetObject"
     ]
+
+    sid = "PublicReadGetObject"
 
     resources = [aws_s3_bucket.web-repository.arn,
       "${aws_s3_bucket.web-repository.arn}/*"
@@ -79,7 +81,7 @@ resource "aws_s3_object" "webindex" {
   key    = "index.html"
   source = "website/index.html"
 
-content_type = "text/html"
+  content_type = "text/html"
   # The filemd5() function is available in Terraform 0.11.12 and later
   # For Terraform 0.11.11 and earlier, use the md5() function and the file() function:
   # etag = "${md5(file("path/to/file"))}"
@@ -99,13 +101,10 @@ resource "aws_cloudfront_origin_access_control" "default" {
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-    origin_id                = aws_s3_bucket.web-repository.id
-    domain_name              = aws_s3_bucket.web-repository.bucket_regional_domain_name
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1"]
+    origin_id   = aws_s3_bucket.web-repository.id
+    domain_name = aws_s3_bucket.web-repository.bucket_regional_domain_name
+    s3_origin_config {
+      origin_access_identity = "origin-access-identity/cloudfront/E1UH4UX6RASB3U"
     }
   }
 
