@@ -72,7 +72,7 @@ resource "aws_s3_bucket_website_configuration" "mf_s3_website_configuration" {
   }
 
   error_document {
-    key = var.start_page
+    key = var.error_page
   }
 }
 
@@ -93,7 +93,6 @@ resource "aws_s3_object" "webindex" {
 #####################################################################
 resource "aws_cloudfront_origin_access_control" "default" {
   name                              = "s3_distribution_access_control"
-  description                       = "Example Policy"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -104,14 +103,13 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     origin_id   = aws_s3_bucket.web-repository.id
     domain_name = aws_s3_bucket.web-repository.bucket_regional_domain_name
     s3_origin_config {
-      origin_access_identity = "origin-access-identity/cloudfront/E1UH4UX6RASB3U"
+      origin_access_identity = var.origin_access_id
     }
   }
 
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "Some comment"
   default_root_object = var.start_page
 
   default_cache_behavior {
@@ -178,6 +176,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+  # Free Tier dont change
   price_class = "PriceClass_200"
 
   restrictions {

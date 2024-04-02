@@ -14,9 +14,10 @@ provider "aws" {
 module "mf-website" {
   source = "./modules/infrastructure"
 
-bucket_name = "mf-webcontent"
-error_page = "error.html"
-start_page = "index.html"
-start_page_dir = "website/index.html"
+  bucket_name      = "mf-webcontent"
+  error_page       = "error.html"
+  start_page       = "index.html"
+  start_page_dir   = "website/index.html"
+  origin_access_id = "origin-access-identity/cloudfront/E1UH4UX6RASB3U"
 
 }
