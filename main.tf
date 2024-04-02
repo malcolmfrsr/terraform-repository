@@ -19,5 +19,5 @@ module "mf-website" {
   start_page       = "index.html"
   start_page_dir   = "website/index.html"
   origin_access_id = "origin-access-identity/cloudfront/E1UH4UX6RASB3U"
-
+  environment      = "production"
 }
