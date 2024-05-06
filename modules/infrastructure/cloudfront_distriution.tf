@@ -18,7 +18,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
-
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = var.start_page
