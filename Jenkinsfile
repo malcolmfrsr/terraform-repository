@@ -2,9 +2,14 @@ pipeline {
     agent any
 
     stages {
-        stage('Hello') {
+        stage('Terraform init') {
             steps {
-                echo 'Hello poop world World!'
+                sh 'terraform init'
+            }
+        }
+        stage('Terraform plan') {
+            steps {
+                sh 'terraform plan'
             }
         }
     }
