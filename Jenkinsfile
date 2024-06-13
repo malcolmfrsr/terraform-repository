@@ -3,9 +3,9 @@ pipeline {
 
     stages {
         stage('Terraform init') {
-            // steps {
-            //     sh 'terraform init'
-            // }
+            steps {
+                sh 'terraform init'
+            }
         }
         stage('Terraform plan') {
             steps {
